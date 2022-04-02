@@ -1,0 +1,22 @@
+{
+  "name": "rn-tweet-embed-example",
+  "displayName": "RnTweetEmbed Example",
+  "expo": {
+    "name": "rn-tweet-embed-example",
+    "slug": "rn-tweet-embed-example",
+    "description": "Example app for rn-tweet-embed",
+    "privacy": "public",
+    "version": "1.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
