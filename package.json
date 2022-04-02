@@ -143,5 +143,9 @@
         }
       ]
     ]
+  },
+  "dependencies": {
+    "@formidable-webview/webshell": "^2.6.0",
+    "react-native-webview": "^11.18.1"
   }
 }
