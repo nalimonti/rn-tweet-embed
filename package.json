@@ -69,7 +69,8 @@
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "react-native-webview": "*"
   },
   "jest": {
     "preset": "react-native",
@@ -145,7 +146,6 @@
     ]
   },
   "dependencies": {
-    "@formidable-webview/webshell": "^2.6.0",
-    "react-native-webview": "^11.18.1"
+    "@formidable-webview/webshell": "^2.6.0"
   }
 }
