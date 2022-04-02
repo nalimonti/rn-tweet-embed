@@ -7,15 +7,21 @@ WebView based embedded Tweet for React Native
 ```sh
 npm install rn-tweet-embed
 ```
+or
+```sh
+yarn add rn-tweet-embed
+```
 
 ## Usage
 
 ```js
-import { multiply } from "rn-tweet-embed";
+import { Tweet } from "rn-tweet-embed";
 
 // ...
 
-const result = await multiply(3, 7);
+return (
+  <Tweet url="https://twitter.com/reactnative/status/1509213219507748868?s=20&t=3U0VMNR-P2d7HXoLbwm-dg" />
+)
 ```
 
 ## Contributing
