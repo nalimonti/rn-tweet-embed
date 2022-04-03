@@ -6,6 +6,7 @@ import makeWebshell, {
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ActivityIndicator, Animated, Image, Pressable, Text, View } from 'react-native';
 import { EmbedURLQueryParams, fetchTweetEmbed, interpolateTweet } from './utils';
+import { useIsMounted } from './useIsMounted';
 
 const Webshell = makeWebshell(
   WebView,
@@ -22,6 +23,7 @@ const Tweet = ({ url, theme, interceptPress, ...props }: Props) => {
   const [tweetEmbed, setTweetEmbed] = useState<string>();
   const [height, setHeight] = useState(1000);
   const [error, setError] = useState(false);
+  const isMounted = useIsMounted();
   const scale = useRef(new Animated.Value(1)).current;
   const opacity = useRef(new Animated.Value(1)).current;
 
@@ -34,10 +36,10 @@ const Tweet = ({ url, theme, interceptPress, ...props }: Props) => {
           ...(theme === 'dark' ? { theme: 'dark' } : {})
         };
         const { html } = await fetchTweetEmbed(p);
-        setTweetEmbed(interpolateTweet(html));
+        if (isMounted.current) setTweetEmbed(interpolateTweet(html));
       }
       catch (e) {
-        setError(true);
+        if (isMounted.current) setError(true);
       }
     })()
   }, [ url ]);
