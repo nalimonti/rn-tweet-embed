@@ -34,10 +34,13 @@
   "keywords": [
     "react-native",
     "ios",
-    "android"
+    "android",
+    "twitter",
+    "web-view",
+    "tweet"
   ],
   "repository": "https://github.com/nalimonti/rn-tweet-embed",
-  "author": "Nolan Alimonti <nolanalimonti@gmail.com> (https://example.com)",
+  "author": "Nolan Alimonti <nolanalimonti@gmail.com> (https://github.com/nalimonti)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/nalimonti/rn-tweet-embed/issues"
@@ -51,8 +54,8 @@
     "@react-native-community/eslint-config": "^2.0.0",
     "@release-it/conventional-changelog": "^2.0.0",
     "@types/jest": "^26.0.0",
-    "@types/react": "^16.9.19",
-    "@types/react-native": "0.62.13",
+    "@types/react": "~17.0.21",
+    "@types/react-native": "^0.66.1",
     "commitlint": "^11.0.0",
     "eslint": "^7.2.0",
     "eslint-config-prettier": "^7.0.0",

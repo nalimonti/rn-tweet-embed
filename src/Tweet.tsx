@@ -3,8 +3,8 @@ import makeWebshell, {
   HandleHTMLDimensionsFeature,
   HTMLDimensions,
 } from '@formidable-webview/webshell';
-import React, { useState, useEffect, useCallback } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { ActivityIndicator, Animated, Image, Pressable, Text, View } from 'react-native';
 import { EmbedURLQueryParams, fetchTweetEmbed, interpolateTweet } from './utils';
 
 const Webshell = makeWebshell(
@@ -15,11 +15,15 @@ const Webshell = makeWebshell(
 interface Props extends WebViewProps {
   url: string;
   theme?: 'dark'|'light';
+  interceptPress?: () => void;
 }
 
-const Tweet = ({ url, theme, ...props }: Props) => {
+const Tweet = ({ url, theme, interceptPress, ...props }: Props) => {
   const [tweetEmbed, setTweetEmbed] = useState<string>();
   const [height, setHeight] = useState(1000);
+  const [error, setError] = useState(false);
+  const scale = useRef(new Animated.Value(1)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     (async () => {
@@ -33,7 +37,7 @@ const Tweet = ({ url, theme, ...props }: Props) => {
         setTweetEmbed(interpolateTweet(html));
       }
       catch (e) {
-        console.log('fetch error', e);
+        setError(true);
       }
     })()
   }, [ url ]);
@@ -42,10 +46,43 @@ const Tweet = ({ url, theme, ...props }: Props) => {
     setHeight(height);
   }, [])
 
+  const _onPressIn = useCallback(() => Animated.parallel([
+    Animated.spring(scale, { toValue: 1.03, useNativeDriver: true }),
+    Animated.timing(opacity, { toValue: 0.85, useNativeDriver: true, duration: 100 })
+  ]).start(), []);
+
+  const _onPressOut = useCallback(() => Animated.parallel([
+    Animated.spring(scale, { toValue: 1, useNativeDriver: true }),
+    Animated.timing(opacity, { toValue: 1, useNativeDriver: true, duration: 100 })
+  ]).start(), []);
+
+  if (error) return (
+    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+      <Image
+        source={require('./assets/twitter_logo.png')}
+        resizeMode="contain"
+        style={{ height: 60, width: 60 }}
+      />
+      <Text
+        style={{
+          color: theme === 'dark' ? 'rgba(255,255,255,0.8)' : 'darkgray',
+          marginLeft: 5,
+      }}
+      >
+        Unable to render tweet...
+      </Text>
+    </View>
+  )
+
   if (!tweetEmbed) return null;
 
   return (
-    <View style={{ height }}>
+    <Animated.View
+      style={[
+        { height, backgroundColor: 'transparent', position: 'relative' },
+        { transform: [ { scale } ], opacity }
+      ]}
+    >
       <Webshell
         javaScriptEnabled={true}
         source={{ html: tweetEmbed }}
@@ -55,8 +92,30 @@ const Tweet = ({ url, theme, ...props }: Props) => {
           <ActivityIndicator animating={true} color="green" />
         )}
         { ...props }
+        style={[
+          { backgroundColor: 'transparent' },
+          props.style || {},
+        ]}
       />
-    </View>
+      {
+        !!interceptPress && (
+          <Pressable
+            onPressIn={_onPressIn}
+            onPressOut={_onPressOut}
+            style={{
+              position: 'absolute',
+              height: '100%',
+              width: '100%',
+              backgroundColor: 'transparent',
+              top: 0,
+              left: 0,
+              right: 0,
+            }}
+            onPress={interceptPress}
+          />
+        )
+      }
+    </Animated.View>
   );
 }
 

@@ -12,16 +12,53 @@ or
 yarn add rn-tweet-embed
 ```
 
+## Props
+
+In addition to React Native [WebView props](https://github.com/react-native-webview/react-native-webview/blob/5e73b2089fc80c2be7aa6eff291b18c81ad4030d/docs/Reference.md),
+the `Tweet` component accepts the following props.
+
+`url` - Tweet URL
+
+| Type     | Required |
+|----------|----------|
+| `string` | Yes      |
+
+---
+
+`theme` - Color theme
+
+| Type                  | Required |
+|-----------------------|----------|
+| `'light'` or `'dark'` | No       |
+
+---
+
+`interceptPress` - Optional callback to intercept widget press
+
+| Type         | Require |
+|--------------|---------|
+| `() => void` | No      |
+
 ## Usage
 
 ```js
 import { Tweet } from "rn-tweet-embed";
 
-// ...
+const App = () => {
+  const [theme, setTheme] = useState('light');
 
-return (
-  <Tweet url="https://twitter.com/reactnative/status/1509213219507748868?s=20&t=3U0VMNR-P2d7HXoLbwm-dg" />
-)
+  const _onPress = () => {
+    // handle widget press
+  }
+
+  return (
+    <Tweet
+      interceptPress={_onPress}
+      theme={theme}
+      url="https://twitter.com/reactnative/status/1509213219507748868?s=20&t=3U0VMNR-P2d7HXoLbwm-dg"
+    />
+  )
+}
 ```
 
 ## Contributing
