@@ -22,9 +22,9 @@ type Embed = {
   width?: number;
 }
 
-export const fetchTweetEmbed = async (params: EmbedURLQueryParams): Promise<Embed> => {
+export const fetchTweetEmbed = async (params: EmbedURLQueryParams, abort?: AbortController): Promise<Embed> => {
   const url = buildURL<EmbedURLQueryParams>(TWITTER_OEMBED_URL, params);
-  const res = await fetch(url, {  method: 'GET', headers: { Accepts: 'application/json' } });
+  const res = await fetch(url, {  method: 'GET', headers: { Accepts: 'application/json' }, signal: abort?.signal });
   return res.json();
 }
 
