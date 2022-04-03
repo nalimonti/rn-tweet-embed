@@ -1,30 +1,41 @@
-import WebView, { WebViewProps } from "react-native-webview";
+import WebView, { WebViewMessageEvent, WebViewProps } from 'react-native-webview';
 import makeWebshell, {
   HandleHTMLDimensionsFeature,
   HTMLDimensions,
 } from '@formidable-webview/webshell';
-import React, { useState, useCallback, useRef } from 'react';
-import { ActivityIndicator, Animated, Image, Pressable, Text, View, StyleSheet } from 'react-native';
-import { useGetTweet } from './useGetTweet';
+import React, { useState, useCallback, useRef, useMemo } from 'react';
+import { Animated, Image, Pressable, Text, View, StyleSheet } from 'react-native';
+import { useIsMounted } from './useIsMounted';
+import { EmbedParams, tweetHtml } from './utils';
 
 const Webshell = makeWebshell(
   WebView,
   new HandleHTMLDimensionsFeature(),
 );
 
-interface Props extends WebViewProps {
-  url: string;
-  theme?: 'dark'|'light';
-  interceptPress?: () => void;
+interface OnlyId {
+  tweetId: number|string;
+  tweetUrl?: never;
 }
 
-const Tweet = ({ url, theme, interceptPress, ...props }: Props) => {
+interface OnlyUrl {
+  tweetId?: never;
+  tweetUrl: string;
+}
+
+type OnlyIdOrUrl = OnlyId | OnlyUrl;
+
+type Props = {
+  theme?: 'dark'|'light';
+  interceptPress?: () => void;
+  webViewProps?: WebViewProps;
+  embedParams?: EmbedParams;
+} & OnlyIdOrUrl
+
+const Tweet = (props: Props) => {
+  const isMounted = useIsMounted();
   const [height, setHeight] = useState(1000);
-  const { tweet, error } = useGetTweet({
-    align: 'center',
-    url,
-    ...(theme === 'dark' ? { theme: 'dark' } : {})
-  })
+  const [loading, setLoading] = useState(true);
   const scale = useRef(new Animated.Value(1)).current;
   const opacity = useRef(new Animated.Value(1)).current;
 
@@ -42,25 +53,27 @@ const Tweet = ({ url, theme, interceptPress, ...props }: Props) => {
     Animated.timing(opacity, { toValue: 1, useNativeDriver: true, duration: 100 })
   ]).start(), []);
 
-  if (error) return (
-    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-      <Image
-        source={require('./assets/twitter_logo.png')}
-        resizeMode="contain"
-        style={styles.logo}
-      />
-      <Text
-        style={{
-          color: theme === 'dark' ? 'rgba(255,255,255,0.8)' : 'darkgray',
-          marginLeft: 5,
-      }}
-      >
-        Unable to render tweet...
-      </Text>
+  const _onMessage = useCallback(({ nativeEvent }: WebViewMessageEvent) => {
+    try {
+      const { loaded } = JSON.parse(nativeEvent.data);
+      if (loaded && isMounted.current) setLoading(false);
+    }
+    catch (e) {}
+  }, [ isMounted?.current ]);
+
+  const embedParams = useMemo<EmbedParams>(() => props.embedParams || ({
+    align: 'center',
+    ...(props.theme === 'dark' ? { theme: 'dark' } : {}),
+  }), [ props.theme, props.embedParams ]);
+
+  const html = tweetHtml(embedParams, props.tweetId, props.tweetUrl);
+
+  if (!html || !html.length) return (
+    <View style={styles.msgContainer}>
+      <Image source={require('./assets/twitter_logo.png')} resizeMode="contain" style={styles.logo} />
+      <Text style={{ color: props.theme === 'dark' ? 'rgba(255,255,255,0.8)' : 'darkgray', marginLeft: 5 }}>Unable to render Tweet...</Text>
     </View>
   )
-
-  if (!tweet) return null;
 
   return (
     <Animated.View
@@ -68,22 +81,27 @@ const Tweet = ({ url, theme, interceptPress, ...props }: Props) => {
     >
       <Webshell
         javaScriptEnabled={true}
-        source={{ html: tweet }}
+        onMessage={_onMessage}
+        source={{ html }}
         onDOMHTMLDimensions={_onDOMHTMLDimensions}
-        startInLoadingState={true}
-        renderLoading={() => (
-          <ActivityIndicator animating={true} color="green" />
-        )}
-        { ...props }
-        style={[ styles.webView, props.style || {} ]}
+        { ...(props.webViewProps || {}) }
+        style={[ styles.webView, props.webViewProps?.style ?? {} ]}
       />
       {
-        !!interceptPress && (
+        loading && (
+          <View style={styles.msgContainer}>
+            <Image source={require('./assets/twitter_logo.png')} resizeMode="contain" style={styles.logo} />
+            <Text style={{ color: props.theme === 'dark' ? 'rgba(255,255,255,0.8)' : 'darkgray', marginLeft: 5 }}>Loading...</Text>
+          </View>
+        )
+      }
+      {
+        !!props.interceptPress && (
           <Pressable
             onPressIn={_onPressIn}
             onPressOut={_onPressOut}
             style={styles.pressOverlay}
-            onPress={interceptPress}
+            onPress={props.interceptPress}
           />
         )
       }
@@ -103,7 +121,8 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-  }
+  },
+  msgContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }
 })
 
 export default Tweet;

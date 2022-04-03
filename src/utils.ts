@@ -1,42 +1,57 @@
-const TWITTER_OEMBED_URL = 'https://publish.twitter.com/oembed';
-
-const buildURL = <T extends object>(url: string, params: T) =>
-  (Object.keys(params) as Array<keyof T>).reduce((str, key, idx) => {
-    return `${str}${idx ? '&' : '?'}${key}=${(params as T)[key]}`
-  }, url)
-
-export type EmbedURLQueryParams = {
-  url: string;
+export type EmbedParams = {
   conversation?: 'none';
   cards?: 'hidden';
   align?: 'center'|'right';
   theme?: 'dark';
 }
 
-type Embed = {
-  author_name: string;
-  author_url: string;
-  html: string;
-  url: string;
-  height?: number;
-  width?: number;
+export const extractIdFromUrl = (url: string) => {
+  const match = url.match(/status\/([0-9]*)/);
+  if (!match || !match.length) return;
+  return match[0].replace('status/', '');
 }
 
-export const fetchTweetEmbed = async (params: EmbedURLQueryParams, abort?: AbortController): Promise<Embed> => {
-  const url = buildURL<EmbedURLQueryParams>(TWITTER_OEMBED_URL, params);
-  const res = await fetch(url, {  method: 'GET', headers: { Accepts: 'application/json' }, signal: abort?.signal });
-  return res.json();
-}
+const WIDGET_JS = `
+window.twttr = (function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0],
+    t = window.twttr || {};
+  if (d.getElementById(id)) return;
+  js = d.createElement(s);
+  js.id = id;
+  js.src = "https://platform.twitter.com/widgets.js";
+  fjs.parentNode.insertBefore(js, fjs);
+  t._e = [];
+  t.ready = function(f) {
+    t._e.push(f);
+  };
+  return t;
+}(document, "script", "twitter-wjs"));
+`;
 
-export const interpolateTweet = (html: string) => `
+export const tweetHtml = (params: EmbedParams, id?: number|string, url?: string) => {
+  let _id = id;
+  if (url && url.length) _id = extractIdFromUrl(url);
+  if (!_id) return;
+  return `
 <!DOCTYPE html>
 <html>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script>
+          ${WIDGET_JS}
+          twttr.ready(function (twttr) {
+            twttr.widgets.createTweet("${_id}", document.getElementById('container'), ${JSON.stringify(params)})
+              .then(() => {
+                window.ReactNativeWebView.postMessage(JSON.stringify({ loaded: true }));
+              });
+
+          })
+        </script>
     </head>
     <body>
-        ${html}
+        <div id='container'></div>
     </body>
 </html>
-`;
+`
+}

@@ -14,14 +14,37 @@ yarn add rn-tweet-embed
 
 ## Props
 
-In addition to React Native [WebView props](https://github.com/react-native-webview/react-native-webview/blob/5e73b2089fc80c2be7aa6eff291b18c81ad4030d/docs/Reference.md),
-the `Tweet` component accepts the following props.
+You must pass either `tweetUrl` or `tweetId` for this to work.
 
-`url` - Tweet URL
+`tweetUrl` - Tweet URL (eg: `https://twitter.com/reactnative/status/20`)
 
 | Type     | Required |
 |----------|----------|
-| `string` | Yes      |
+| `string` | No       |
+
+---
+
+`tweetId` - Tweet ID (eg: `20`)
+
+| Type                 | Required |
+|----------------------|----------|
+| `string` or `number` | No       |
+
+---
+
+`webViewProps` - Props passed to the WebView
+
+| Type                                                                                                                                          | Required |
+|-----------------------------------------------------------------------------------------------------------------------------------------------|----------|
+| [WebView props](https://github.com/react-native-webview/react-native-webview/blob/5e73b2089fc80c2be7aa6eff291b18c81ad4030d/docs/Reference.md) | No       |
+
+---
+
+`embedParams` - Tweet embed params
+
+| Type                                                                                                                                       | Required |
+|--------------------------------------------------------------------------------------------------------------------------------------------|----------|
+| [Tweet embed params](https://developer.twitter.com/en/docs/twitter-for-websites/embedded-tweets/guides/embedded-tweet-parameter-reference) | No       |
 
 ---
 
@@ -55,7 +78,7 @@ const App = () => {
     <Tweet
       interceptPress={_onPress}
       theme={theme}
-      url="https://twitter.com/reactnative/status/1509213219507748868?s=20&t=3U0VMNR-P2d7HXoLbwm-dg"
+      tweetUrl="https://twitter.com/reactnative/status/20"
     />
   )
 }

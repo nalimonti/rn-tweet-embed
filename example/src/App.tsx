@@ -10,8 +10,9 @@ export default function App() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'red' }}>
       <Tweet
-        url="https://twitter.com/reactnative/status/1509213219507748868?s=20&t=3U0VMNR-P2d7HXoLbwm-dg"
-        theme="light"
+        // tweetUrl="https://twitter.com/reactnative/status/1509213219507748868?s=20&t=3U0VMNR-P2d7HXoLbwm-dg"
+        tweetId="20"
+        theme="dark"
         interceptPress={_openLink}
       />
     </SafeAreaView>
